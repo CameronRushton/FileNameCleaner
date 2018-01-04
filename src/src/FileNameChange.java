@@ -31,7 +31,7 @@ public class FileNameChange {
 	      
 	   } else if (dir.isFile() && dir.getName().charAt(0) != '.') { //it's a file, so rename. Ignore .DS_Store & hidden files
 		   
-		   String newName = dir.getName();
+		   String fileName = dir.getName();
 		   int pos;
 		   String path = this.getRawPath(dir);
 		   System.out.println("path: " + path);
@@ -46,8 +46,10 @@ public class FileNameChange {
 		   /**
 		    * trim/remove bits
 		    */
-		   if (newName.contains("&amp;")) newName = newName.replaceAll("&amp;", "&");
-		   StringBuffer newNameBuffer = new StringBuffer(newName);
+		   if (fileName.contains("&amp;")) fileName = fileName.replaceAll("&amp;", "&");
+
+		   StringBuffer newNameBuffer = new StringBuffer(fileName);
+		   String newName = fileName;
 		   /**
 		    * scan the string for brackets.
 		    * if first or last char is a bracket, leave it
@@ -67,15 +69,13 @@ public class FileNameChange {
 		   /**
 		    * if a keyword is inside parenthesis, remove entire parenthesis
 		    */
-		   int prevPos = 0;
 		   for (String keyword : keywords) {
-			   pos = newNameBuffer.indexOf(keyword, prevPos);
+			   pos = newName.toLowerCase().indexOf(keyword.toLowerCase(), 0);
 			   
-			   while (pos != -1) { //while there are keywords found, drop nukes
+			   while (pos != -1) { //while there are still more of the same keywords found, drop nukes
 				   System.out.println("Keyword found");
 				   newNameBuffer = nukeKeyword(newNameBuffer, keyword, pos);
-				   prevPos = pos;
-				   pos = newNameBuffer.indexOf(keyword, prevPos+1);
+				   pos = newName.toLowerCase().indexOf(keyword.toLowerCase(), pos+1);
 				   
 			   }
 		   }
@@ -86,6 +86,10 @@ public class FileNameChange {
 		   }
 		   System.out.println();
 		   
+		   //update newName
+		   newName = newNameBuffer.toString(); //TODO: Make newNameBuffer a thing that stays in methods and is not released here to
+		   //...avoid having two of the same variables go out of sync.
+		   
 		   if (words.length > 1 && words[words.length-1].contains("-")) { //if the last word contains a hyphen 
 			   newName = this.cutTail(words, newNameBuffer.toString());
 			   System.out.println("Cut tail: " + newName);
@@ -93,6 +97,7 @@ public class FileNameChange {
 		   //if the extension got lost, add it
 		   if (!newName.contains(extension)) {
 			   newName += extension;
+			   System.out.println("Added extension: " + newName);
 		   }
 		   
 		   //if there is a space before the extension, remove it
@@ -101,7 +106,7 @@ public class FileNameChange {
 			   buildName.deleteCharAt(newName.lastIndexOf(".")-1);
 			   newName = buildName.toString();
 		   }
-		   newName = newNameBuffer.toString();
+		   
 		   newName = path + newName;
 		   System.out.println("Renamed to: " + newName);
 		   //rename
