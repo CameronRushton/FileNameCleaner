@@ -6,7 +6,7 @@ import java.io.IOException;
 public class FileNameChange {
 	
 	//Root path
-	private static String rootPath = "/Users/path";
+	private static String rootPath = "/Users/Cameron/Desktop/FileRenameTest";
 	//Number of errors
 	private int errors = 0;
 	
@@ -51,12 +51,14 @@ public class FileNameChange {
 		   
 		   //Check for any words that contain these words. (upper or lower case)
 		   String[] keywords = {"Audio", "Video", "Youtube", "Soundcloud", "Download", "Official", "Lyric", "HQ",
-				   "Free", "Zippy", "kbps", "Monstercat", "HD"};
+				   "Free", "Zippy", "kbps", "Monstercat", "HD", "Cover Art", "Premiere"};
 		   
 		   /**
 		    * trim/remove bits
 		    */
 		   if (newName.contains("&amp;")) newName = newName.replaceAll("&amp;", "&");
+		   //TODO: The following makes the last word break up when theres an underscore in it.
+		   //Ex: Artist_-_Song_(Original_Mix)-XX_XX-X.flac -> Artist - Song (Original Mix)-XX XX
 		   if (newName.contains("_")) newName = newName.replaceAll("_", " ");
 
 		   /**
@@ -173,9 +175,9 @@ public class FileNameChange {
 	
 	/**
 	* Snip end bit at hyphen (hyphen also gets removed)
-	* keep snipping until the hyphen in question is one we dont want to remove or there are no more
-	* NOTE: This assumes that there will be no names that have relevant data immediately after a hyphen
-	* ex: Artist - Song will be fine, but Artist-Song will be cut short to Artist
+	* keep snipping until the hyphens in the last word are gone.
+	* Note: important data may be deleted if the last word contains a hyphen before data.
+	* Ex: Artist-(Original)-XXXXX.flac -> Artist.flac (Should be: Artist-(Original).flac)
 	* @param words : String[]
 	* @param fileName : String
 	* @return String - the edited file name
@@ -183,16 +185,15 @@ public class FileNameChange {
 	private String cutTail(String[] words, String fileName) {
 		//trim end bit after hyphen (residual youtube-dl code). Only do this if there is a hyphen in the last word
 		int pos = 0;
+		String lastWord = words[words.length-1];
 			 
 	    	do {
 	    		pos = fileName.lastIndexOf("-");
-	    	    		
-	    	    	if (fileName.charAt(pos+1) == ' ') break; //break if the hyphen being examined has a space after it	 		
-	    	   
 	    	    	fileName = fileName.substring(0, pos);
+	    	    	lastWord = lastWord.substring(0, lastWord.lastIndexOf('-'));
 	    	    	  	
-	    	} while (fileName.contains("-"));
-	       
+	    	} while (lastWord.contains("-")); //while the last word contains a hyphen
+
 	    	return fileName;
 		   
 	}
