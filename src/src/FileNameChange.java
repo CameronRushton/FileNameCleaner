@@ -6,9 +6,13 @@ import java.io.IOException;
 public class FileNameChange {
 	
 	//Root path
-	private static String rootPath = "/Users/Cameron/Desktop/FileRenameTest";
+	private static String rootPath = "/Volumes/MUSIC/House Party/90s Hiphop";
 	//Number of errors
 	private int errors = 0;
+	//Number of warnings
+	private int warnings = 0;
+	//Number of renames
+	private int numFiles = 0;
 	
 	public static void main(String[] args) throws IOException {
 		
@@ -17,7 +21,8 @@ public class FileNameChange {
 		FileNameChange c = new FileNameChange();
 	    c.visitAllDirsAndFiles(root);
 	    
-	    System.out.println("Finished with " + c.getNumErrors() + " errors");
+	    System.out.println("Finished with " + c.getNumErrors() + " errors and " + c.getNumWarnings() + " warnings");
+	    System.out.println("Numer of files renamed: " + c.getNumRenames());
 	}
 	
 	/**
@@ -25,6 +30,18 @@ public class FileNameChange {
 	 */
 	public int getNumErrors() {
 		return errors;
+	}
+	/**
+	 * @return int - Number of warnings
+	 */
+	public int getNumWarnings() {
+		return warnings;
+	}
+	/**
+	 * @return int - Number of renames
+	 */
+	public int getNumRenames() {
+		return numFiles;
 	}
 	
 	/**
@@ -43,23 +60,20 @@ public class FileNameChange {
 	      }
 	      
 	   } else if (dir.isFile() && dir.getName().charAt(0) != '.') { //it's a file, so rename. Ignore .DS_Store & hidden files
-		   
+		   numFiles++;
 		   String newName = dir.getName();
 		   int pos;
 		   String path = this.getRawPath(dir);
 		   String extension = this.getFileExtension(dir);
 		   
 		   //Check for any words that contain these words. (upper or lower case)
-		   String[] keywords = {"Audio", "Video", "Youtube", "Soundcloud", "Download", "Official", "Lyric", "HQ",
+		   String[] keywords = {"Audio", "Video", "Youtube", "Soundcloud", "Download", "Official", "Lyric", "Lyrics", "HQ",
 				   "Free", "Zippy", "kbps", "Monstercat", "HD", "Cover Art", "Premiere"};
 		   
 		   /**
 		    * trim/remove bits
 		    */
 		   if (newName.contains("&amp;")) newName = newName.replaceAll("&amp;", "&");
-		   //TODO: The following makes the last word break up when theres an underscore in it.
-		   //Ex: Artist_-_Song_(Original_Mix)-XX_XX-X.flac -> Artist - Song (Original Mix)-XX XX
-		   if (newName.contains("_")) newName = newName.replaceAll("_", " ");
 
 		   /**
 		    * if a keyword is inside parenthesis, remove entire parenthesis
@@ -75,9 +89,18 @@ public class FileNameChange {
 		   }
 		   
 		   String[] words = this.splitIntoWords(newName);
-		   if (words[words.length-1].contains("-")) { //if the last word contains a hyphen 
+
+		   //Ex: Artist_-_Song_(Original_Mix)-XX_XX-X.flac -> Artist - Song (Original Mix)-XX XX
+		   //Solution: The above example will never occur since the tail (-XX-XXXX) is created by download method A (yt-dl) and
+		   //the underscores are created by download method B (outdated). So, the file name either needs to replace all underscores
+		   //or deal with a tail, but not both.
+		   if (words.length <= 1 && newName.contains("_")) {
+			   newName = newName.replaceAll("_", " ");
+			   
+		   } else if (words[words.length-1].contains("-")) { //if the last word contains a hyphen 
 			   newName = this.cutTail(words, newName);
 		   }
+		   
 		   //if the extension got lost, add it
 		   if (!newName.contains(extension)) {
 			   newName += extension;
@@ -159,7 +182,7 @@ public class FileNameChange {
 					if (j == 0) {
 						System.err.println("WARNING: Found keyword inside close parenthesis with no open parenthesis.\n"
 								+ "Only right side nuked -Result: " + newNameBuffer.toString());
-						errors++;
+						warnings++;
 					}
 					
 				}
