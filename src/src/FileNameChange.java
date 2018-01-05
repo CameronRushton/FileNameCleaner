@@ -1,3 +1,15 @@
+/**
+ * File name changer. Used to clean up music files in a library given a specified path.
+ * Eliminates keywords and words associated with keywords as well as removing excess characters created by
+ * youtube-dl and eliminates excess space between words.
+ * @author C.Rushton B.Eng Student - Carleton
+ * @date January 4th, 2018
+ * By using this software you agree that the author(s) is/are not liable for any damages done by the software.
+ * This software may be reused and edited by anyone, although credit to the original author(s) should be given.
+ * 
+ * Note: File extensions need to be present in the file name.
+ */
+
 package src;
 
 import java.io.File;
@@ -6,7 +18,7 @@ import java.io.IOException;
 public class FileNameChange {
 	
 	//Root path
-	private static String rootPath = "/Volumes/MUSIC/House Party/90s Hiphop";
+	private static String rootPath = "/Volumes/MUSIC";
 	//Number of errors
 	private int errors = 0;
 	//Number of warnings
@@ -68,7 +80,7 @@ public class FileNameChange {
 		   
 		   //Check for any words that contain these words. (upper or lower case)
 		   String[] keywords = {"Audio", "Video", "Youtube", "Soundcloud", "Download", "Official", "Lyric", "Lyrics", "HQ",
-				   "Free", "Zippy", "kbps", "Monstercat", "HD", "Cover Art", "Premiere"};
+				   "Free", "Zippy", "kbps", "Monstercat", "HD", "Cover Art", "Premiere", "Out Now"};
 		   
 		   /**
 		    * trim/remove bits
